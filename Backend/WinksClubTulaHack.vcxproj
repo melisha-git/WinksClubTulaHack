@@ -127,9 +127,41 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Connector.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="WinksClubTulaHack.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Connector.hpp" />
+    <ClInclude Include="Server.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\boost.1.83.0\build\boost.targets" Condition="Exists('packages\boost.1.83.0\build\boost.targets')" />
+    <Import Project="packages\boost_system-vc140.1.83.0\build\boost_system-vc140.targets" Condition="Exists('packages\boost_system-vc140.1.83.0\build\boost_system-vc140.targets')" />
+    <Import Project="packages\boost_date_time-vc140.1.83.0\build\boost_date_time-vc140.targets" Condition="Exists('packages\boost_date_time-vc140.1.83.0\build\boost_date_time-vc140.targets')" />
+    <Import Project="packages\boost_filesystem-vc140.1.83.0\build\boost_filesystem-vc140.targets" Condition="Exists('packages\boost_filesystem-vc140.1.83.0\build\boost_filesystem-vc140.targets')" />
+    <Import Project="packages\boost_thread-vc120.1.83.0\build\boost_thread-vc120.targets" Condition="Exists('packages\boost_thread-vc120.1.83.0\build\boost_thread-vc120.targets')" />
+    <Import Project="packages\boost_regex-vc142.1.83.0\build\boost_regex-vc142.targets" Condition="Exists('packages\boost_regex-vc142.1.83.0\build\boost_regex-vc142.targets')" />
+    <Import Project="packages\boost_log-vc141.1.83.0\build\boost_log-vc141.targets" Condition="Exists('packages\boost_log-vc141.1.83.0\build\boost_log-vc141.targets')" />
+    <Import Project="packages\boost_json-vc143.1.83.0\build\boost_json-vc143.targets" Condition="Exists('packages\boost_json-vc143.1.83.0\build\boost_json-vc143.targets')" />
+    <Import Project="packages\boost_container-vc143.1.83.0\build\boost_container-vc143.targets" Condition="Exists('packages\boost_container-vc143.1.83.0\build\boost_container-vc143.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\boost.1.83.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost.1.83.0\build\boost.targets'))" />
+    <Error Condition="!Exists('packages\boost_system-vc140.1.83.0\build\boost_system-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_system-vc140.1.83.0\build\boost_system-vc140.targets'))" />
+    <Error Condition="!Exists('packages\boost_date_time-vc140.1.83.0\build\boost_date_time-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_date_time-vc140.1.83.0\build\boost_date_time-vc140.targets'))" />
+    <Error Condition="!Exists('packages\boost_filesystem-vc140.1.83.0\build\boost_filesystem-vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_filesystem-vc140.1.83.0\build\boost_filesystem-vc140.targets'))" />
+    <Error Condition="!Exists('packages\boost_thread-vc120.1.83.0\build\boost_thread-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_thread-vc120.1.83.0\build\boost_thread-vc120.targets'))" />
+    <Error Condition="!Exists('packages\boost_regex-vc142.1.83.0\build\boost_regex-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_regex-vc142.1.83.0\build\boost_regex-vc142.targets'))" />
+    <Error Condition="!Exists('packages\boost_log-vc141.1.83.0\build\boost_log-vc141.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_log-vc141.1.83.0\build\boost_log-vc141.targets'))" />
+    <Error Condition="!Exists('packages\boost_json-vc143.1.83.0\build\boost_json-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_json-vc143.1.83.0\build\boost_json-vc143.targets'))" />
+    <Error Condition="!Exists('packages\boost_container-vc143.1.83.0\build\boost_container-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost_container-vc143.1.83.0\build\boost_container-vc143.targets'))" />
+  </Target>
 </Project>

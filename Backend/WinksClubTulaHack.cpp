@@ -1,6 +1,12 @@
-﻿#include <iostream>
+﻿#include "Server.hpp"
+#include <chrono>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <memory>
+#include <string>
 
-int main()
-{
-    std::cout << "Hello World!\n";
+int main() {
+	Server s("127.0.0.1", 8080);
+	s.start();
 }
