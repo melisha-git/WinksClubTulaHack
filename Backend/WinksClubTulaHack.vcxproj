@@ -129,6 +129,64 @@
   <ItemGroup>
     <ClCompile Include="WinksClubTulaHack.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Database.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Readme!!!.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libpqDLL\8.x\x64\comerr32.dll" />
+    <None Include="libpqDLL\8.x\x64\gssapi32.dll" />
+    <None Include="libpqDLL\8.x\x64\iconv.dll" />
+    <None Include="libpqDLL\8.x\x64\k5sprt32.dll" />
+    <None Include="libpqDLL\8.x\x64\krb5_32.dll" />
+    <None Include="libpqDLL\8.x\x64\libeay32.dll" />
+    <None Include="libpqDLL\8.x\x64\libiconv-2.dll" />
+    <None Include="libpqDLL\8.x\x64\libintl-8.dll" />
+    <None Include="libpqDLL\8.x\x64\libpq.dll" />
+    <None Include="libpqDLL\8.x\x64\libxml2.dll" />
+    <None Include="libpqDLL\8.x\x64\libxslt.dll" />
+    <None Include="libpqDLL\8.x\x64\msvcr71.dll" />
+    <None Include="libpqDLL\8.x\x64\ssleay32.dll" />
+    <None Include="libpqDLL\8.x\x64\zlib1.dll" />
+    <None Include="libpqDLL\8.x\x86\comerr32.dll" />
+    <None Include="libpqDLL\8.x\x86\gssapi32.dll" />
+    <None Include="libpqDLL\8.x\x86\iconv.dll" />
+    <None Include="libpqDLL\8.x\x86\k5sprt32.dll" />
+    <None Include="libpqDLL\8.x\x86\krb5_32.dll" />
+    <None Include="libpqDLL\8.x\x86\libeay32.dll" />
+    <None Include="libpqDLL\8.x\x86\libiconv-2.dll" />
+    <None Include="libpqDLL\8.x\x86\libintl-8.dll" />
+    <None Include="libpqDLL\8.x\x86\libpq.dll" />
+    <None Include="libpqDLL\8.x\x86\libxml2.dll" />
+    <None Include="libpqDLL\8.x\x86\libxslt.dll" />
+    <None Include="libpqDLL\8.x\x86\msvcr71.dll" />
+    <None Include="libpqDLL\8.x\x86\PgCPP.DLL.8.x.dll" />
+    <None Include="libpqDLL\8.x\x86\ssleay32.dll" />
+    <None Include="libpqDLL\8.x\x86\zlib1.dll" />
+    <None Include="libpqDLL\9.x\x64\iconv.dll" />
+    <None Include="libpqDLL\9.x\x64\libeay32.dll" />
+    <None Include="libpqDLL\9.x\x64\libintl-8.dll" />
+    <None Include="libpqDLL\9.x\x64\libpq.dll" />
+    <None Include="libpqDLL\9.x\x64\libxml2.dll" />
+    <None Include="libpqDLL\9.x\x64\libxslt.dll" />
+    <None Include="libpqDLL\9.x\x64\ssleay32.dll" />
+    <None Include="libpqDLL\9.x\x64\zlib1.dll" />
+    <None Include="libpqDLL\9.x\x86\libeay32.dll" />
+    <None Include="libpqDLL\9.x\x86\libiconv.dll" />
+    <None Include="libpqDLL\9.x\x86\libintl.dll" />
+    <None Include="libpqDLL\9.x\x86\libpq.dll" />
+    <None Include="libpqDLL\9.x\x86\libxml2.dll" />
+    <None Include="libpqDLL\9.x\x86\libxslt.dll" />
+    <None Include="libpqDLL\9.x\x86\PgCPP.DLL.9.x.dll" />
+    <None Include="libpqDLL\9.x\x86\ssleay32.dll" />
+    <None Include="libpqDLL\9.x\x86\zlib1.dll" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="BulkCopyConfig.xml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
