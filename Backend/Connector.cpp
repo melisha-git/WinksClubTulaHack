@@ -40,7 +40,7 @@ void Connector::parseRequest() {
 
 void Connector::createResponse() {
     boost::json::array obj;
-    obj.push_back(boost::json::string("Aidar Chmo"));
+    obj.push_back(boost::json::string("Если Вы это читаете - Вы лучший!"));
     if (request_.target() == "/api") {
         response_.set(boost::beast::http::field::content_type, "application/json");
         boost::beast::ostream(response_.body()) << obj;
