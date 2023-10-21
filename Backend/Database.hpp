@@ -14,7 +14,7 @@ private:
 public:
     Database(const std::string &hostname, const std::string &port, const std::string &database, 
             const std::string &user, const std::string &password);
-    Database(const std::string& connectionString);
+    Database(std::string connectionString);
     ~Database();
 
     void init(const std::string& hostname, const std::string& port, const std::string& database,

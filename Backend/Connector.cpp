@@ -1,10 +1,8 @@
 #include "Connector.hpp"
-#include "Users.hpp"
-#include "Events.hpp"
-#include "Tags.hpp"
 
 Connector::Connector(boost::asio::ip::tcp::socket socket) 
-    : socket_(std::move(socket)), db_("94.103.86.64", "5432", "postgres", "postgres", "1234") {
+    : socket_(std::move(socket)), db_("94.103.86.64", "5432", "postgres", "postgres", "1234"),
+        users_(db_.getConnectionString()), events_(db_.getConnectionString()), tags_(db_.getConnectionString()) {
 
 }
 
@@ -62,21 +60,18 @@ void Connector::createGetResponse() {
             if (userId == -1 && login == "") {
                 throw std::logic_error("Dont request id or login");
             }
-            Users users(db_.getConnectionString());
-            Events events(db_.getConnectionString());
-            Tags tags(db_.getConnectionString());
             std::vector<int> eventIds;
             if (userId != -1)
-                eventIds = users.getEventsIDFromUserID(userId);
+                eventIds = users_.getEventsIDFromUserID(userId);
             else
-                eventIds = users.getEventsIDFromLogin(login);
+                eventIds = users_.getEventsIDFromLogin(login);
             for (auto eventId : eventIds) {
-                auto event = events.getEventFromID(eventId);
+                auto event = events_.getEventFromID(eventId);
                 boost::json::object& jsonObject = event.as_object();
-                auto tagIDs = events.getTagsIDFromEventID(eventId);
+                auto tagIDs = events_.getTagsIDFromEventID(eventId);
                 boost::json::array newTags;
                 for (auto tagID : tagIDs) {
-                    auto tag = tags.getTagByID(tagID);
+                    auto tag = tags_.getTagByID(tagID);
                     newTags.push_back(tag);
                 }
                 jsonObject.erase("tags");
@@ -86,6 +81,20 @@ void Connector::createGetResponse() {
             }
         }
         catch (...) {}
+    }
+    else if (request_.target() == "/login") {
+        boost::json::object value = boost::json::parse(request_.body()).as_object();
+        if (value.find("login") == value.end() || value.find("password") == value.end()) {
+            response_.result(boost::beast::http::status::bad_request);
+            return;
+        }
+        std::string login = value.at("login").as_string().c_str();
+        std::string password = value.at("password").as_string().c_str();
+        auto userID = users_.getUserIDByCreds(login, password);
+        if (userID == boost::json::value())
+            response_.result(boost::beast::http::status::not_found);
+        else
+            boost::beast::ostream(response_.body()) << userID;
     }
     else {
         response_.result(boost::beast::http::status::not_found);
@@ -112,7 +121,7 @@ void Connector::createPostResponse() {
             return;
         }
         else {
-            db_.execDml("INSERT INTO users(login, password) VALUES('" + login + "', '" + password + "')");
+            users_.addNewUser(login, password);
         }
     }
 }

@@ -7,6 +7,9 @@
 #include <boost/json.hpp>
 #include "Database.hpp"
 #include <iostream>
+#include "Users.hpp"
+#include "Events.hpp"
+#include "Tags.hpp"
 
 class Connector : public std::enable_shared_from_this<Connector> {
 private:
@@ -19,6 +22,7 @@ private:
     boost::asio::steady_timer deadline_{socket_.get_executor(), std::chrono::seconds(60)};
 public:
     Connector(boost::asio::ip::tcp::socket socket);
+    ~Connector() = default;
     void start();
 
 private:
@@ -32,4 +36,7 @@ private:
     void checkDeadline();
 private:
     Database db_;
+    Users users_;
+    Events events_;
+    Tags tags_;
 };

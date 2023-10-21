@@ -31,3 +31,15 @@ std::vector<int> Users::getEventsIDFromLogin(const std::string& login) {
     }
     return result;
 }
+
+void Users::addNewUser(const std::string& login, const std::string& password) {
+    db_.execDml("INSERT INTO users(login, password) VALUES('" + login + "', '" + password + "')");
+}
+
+boost::json::value Users::getUserIDByCreds(const std::string& login, const std::string& password) {
+    auto users = db_.selectDml("SELECT id FROM users WHERE login = '" + login + "' AND password = '" + password + "'");
+    boost::json::value value;
+    if (users.empty())
+        return value;
+    return users.at(0);
+}

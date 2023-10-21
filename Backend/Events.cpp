@@ -23,3 +23,16 @@ std::vector<int> Events::getTagsIDFromEventID(int eventID) {
 	return result;
 }
 
+void Events::addNewEvents(const std::string& name, const std::string &description,
+	const std::string &type, const std::string& image, const std::string &beginTime,
+	const std::string& endTime, unsigned subscribers, unsigned maxSubscribers,
+	std::vector<int> tags) {
+	std::string query = "insert into events(name, description, type, image, begin_time, end_time, subscribers, max_subscribers, tags) values('" +
+		name + "', '" + description + "', '" + image + "', '" + beginTime + "', '" + endTime + "', " +
+		std::to_string(subscribers) + ", " + std::to_string(maxSubscribers) + ", '{";
+	for (auto i : tags) {
+		query += i + ", ";
+	}
+	db_.execDml(query);
+}
+

@@ -17,7 +17,7 @@ Database::Database(const std::string& hostname, const std::string& port, const s
 	init(hostname, port, database, user, password);
 }
 
-Database::Database(const std::string& connectionString) {
+Database::Database(std::string connectionString) {
 	init(connectionString);
 }
 
@@ -33,7 +33,8 @@ void Database::init(const std::string& hostname, const std::string& port, const 
 }
 
 void Database::init(const std::string& connectionString) {
-	if (connect_ != nullptr) {
+	
+	if (connectionString_ != "") {
 		PQfinish(connect_);
 	}
 	connectionString_ = connectionString;

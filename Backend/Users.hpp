@@ -13,4 +13,6 @@ public:
 	~Users() = default;
 	std::vector<int> getEventsIDFromUserID(int userID);
 	std::vector<int> getEventsIDFromLogin(const std::string &login);
+	void addNewUser(const std::string &login, const std::string &password);
+	boost::json::value getUserIDByCreds(const std::string& login, const std::string& password);
 };
