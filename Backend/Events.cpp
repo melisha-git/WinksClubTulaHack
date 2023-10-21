@@ -28,11 +28,26 @@ void Events::addNewEvents(const std::string& name, const std::string &descriptio
 	const std::string& endTime, unsigned subscribers, unsigned maxSubscribers,
 	std::vector<int> tags) {
 	std::string query = "insert into events(name, description, type, image, begin_time, end_time, subscribers, max_subscribers, tags) values('" +
-		name + "', '" + description + "', '" + image + "', '" + beginTime + "', '" + endTime + "', " +
+		name + "', '" + description + "', " + (type == "event" ? "true, '" : "false, '") + image + "', '" + beginTime + "', '" + endTime + "', " +
 		std::to_string(subscribers) + ", " + std::to_string(maxSubscribers) + ", '{";
-	for (auto i : tags) {
-		query += i + ", ";
+	for (int i = 0; i < tags.size(); ++i) {
+		query += std::to_string(tags[i]);
+		if (i + 1 < tags.size())
+			query += ", ";
 	}
+	query += "}')";
 	db_.execDml(query);
+}
+
+void Events::updateEventSubscribers(unsigned subscribers, int id) {
+	std::string query = "UPDATE events SET subscribers = " + std::to_string(subscribers) + " WHERE id = " + std::to_string(id);
+	db_.execDml(query);
+}
+
+int Events::getEventIDbyTime(const std::string& begin_time, const std::string& end_time) {
+	auto event = db_.selectDml("SELECT id FROM events WHERE begin_time = '" + begin_time + "' AND end_time = '" + end_time + "'");
+	if (event.empty())
+		return -1;
+	return std::stoi(event.at(0).as_object()["id"].as_string().c_str());
 }
 

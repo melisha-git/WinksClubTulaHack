@@ -1,4 +1,5 @@
 #include "Connector.hpp"
+#include <string>
 
 Connector::Connector(boost::asio::ip::tcp::socket socket) 
     : socket_(std::move(socket)), db_("94.103.86.64", "5432", "postgres", "postgres", "1234"),
@@ -82,24 +83,11 @@ void Connector::createGetResponse() {
         }
         catch (...) {}
     }
-    else if (request_.target() == "/login") {
-        boost::json::object value = boost::json::parse(request_.body()).as_object();
-        if (value.find("login") == value.end() || value.find("password") == value.end()) {
-            response_.result(boost::beast::http::status::bad_request);
-            return;
-        }
-        std::string login = value.at("login").as_string().c_str();
-        std::string password = value.at("password").as_string().c_str();
-        auto userID = users_.getUserIDByCreds(login, password);
-        if (userID == boost::json::value())
-            response_.result(boost::beast::http::status::not_found);
-        else
-            boost::beast::ostream(response_.body()) << userID;
-    }
     else {
-        response_.result(boost::beast::http::status::not_found);
+        response_.result(boost::beast::http::status::bad_request);
     }
     if (response_.body().size() == 0) {
+        response_.result(boost::beast::http::status::bad_request);
         boost::beast::ostream(response_.body()) << boost::json::array();
     }
 }
@@ -122,7 +110,73 @@ void Connector::createPostResponse() {
         }
         else {
             users_.addNewUser(login, password);
+            auto userID = users_.getUserIDByCreds(login, password);
+            if (userID == boost::json::value())
+                response_.result(boost::beast::http::status::bad_request);
+            else
+                boost::beast::ostream(response_.body()) << userID;
         }
+    }
+    else if (request_.target() == "/login") {
+        boost::json::object value = boost::json::parse(request_.body()).as_object();
+        if (value.find("login") == value.end() || value.find("password") == value.end()) {
+            response_.result(boost::beast::http::status::bad_request);
+            return;
+        }
+        std::string login = value.at("login").as_string().c_str();
+        std::string password = value.at("password").as_string().c_str();
+        auto userID = users_.getUserIDByCreds(login, password);
+        if (userID == boost::json::value())
+            response_.result(boost::beast::http::status::bad_request);
+        else
+            boost::beast::ostream(response_.body()) << userID;
+    }
+    else if (request_.target() == "/api/newevent") {
+        boost::json::object value = boost::json::parse(request_.body()).as_object();
+        if (value.find("login") == value.end() || value.find("name") == value.end() ||
+            value.find("description") == value.end() || value.find("type") == value.end() || 
+            value.find("image") == value.end() || value.find("begin_time") == value.end() || 
+            value.find("end_time") == value.end() || value.find("subscribers") == value.end() ||
+            value.find("max_subscribers") == value.end() || value.find("tags") == value.end()) {
+            response_.result(boost::beast::http::status::bad_request);
+            return;
+        }
+        try {
+            std::string login = value.at("login").as_string().c_str();
+            std::string name = value.at("name").as_string().c_str();
+            std::string description = value.at("description").as_string().c_str();
+            std::string type = value.at("type").as_string().c_str();
+            std::string image = value.at("image").as_string().c_str();
+            std::string begin_time = value.at("begin_time").as_string().c_str();
+            std::string end_time = value.at("end_time").as_string().c_str();
+            unsigned subscribers = value.at("subscribers").as_int64();
+            unsigned max_subscribers = value.at("max_subscribers").as_int64();
+            auto tags = value.at("tags").as_array();
+            std::vector<int> tagsVc;
+            for (auto tag : tags) {
+                boost::json::object jsObj = tag.as_object();
+                if (jsObj.find("link") == jsObj.end()) {
+                    std::cout << "END\n";
+                }
+                int tagID = tags_.getTagIDByLink(jsObj["link"].as_string().c_str());
+                if (tagID != -1)
+                    tagsVc.push_back(tagID);
+            }
+            events_.addNewEvents(name, description, type, image, begin_time, end_time, subscribers == 0 ? 1 : subscribers, max_subscribers, tagsVc);
+            int eventId = events_.getEventIDbyTime(begin_time, end_time);
+        }
+        catch (std::exception ex) {
+            std::string logMsg = ex.what();
+            logMsg = "Error :" + logMsg;
+            std::cout << logMsg << std::endl;
+        }
+    }
+    else {
+        response_.result(boost::beast::http::status::bad_request);
+    }
+    if (response_.body().size() == 0) {
+        response_.result(boost::beast::http::status::bad_request);
+        boost::beast::ostream(response_.body()) << boost::json::array();
     }
 }
 

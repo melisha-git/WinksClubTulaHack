@@ -1,34 +1,24 @@
 #include "Logs.hpp"
-#include <cstdlib>
+#include <filesystem>
+#include <iostream>
 
-
-namespace Logger {
-    std::unique_ptr<Log> g_log;
-
-    void startLog(const std::string& filepath) {
-        g_log = std::make_unique<Log>(filepath);
-        Logger::log(Level::Info, "Started logging system.");
-    }
-
-    // Method which logs.
-    void log(Level s, const std::string& msg) {
-        g_log->addLog(s, msg);
-    }
-
-    Log::Log(const std::string& filepath) : m_logfile{} {
-        m_logfile.open(filepath);
-    }
-
-    // Add a message to our log.
-    void Log::addLog(Level s, const std::string& msg) {
-        if (m_logfile.is_open()) {
-            m_logfile << levels[static_cast<int>(s)] << ": " << msg << std::endl;
-        }
-    }
-
-    Log::~Log() {
-        addLog(Level::Info, "Stopped logging system.");
-        m_logfile.close();
-    }
+Log::Log(const std::string& filepath, const std::string& fileName) 
+	: filepath_(filepath), fileName_(fileName) {
+	logFile_.open(filepath + fileName, std::ios::binary | std::ios::app);
+	isOpen_ = true;
+	if (!logFile_.is_open()) {
+		std::cout << "Log File Not Open\n";
+		isOpen_ = false;
+	}
 }
 
+void Log::addLog(const std::string& msg) {
+	std::cout << msg << std::endl;
+	if (isOpen_)
+		logFile_ << msg << std::endl;
+}
+
+Log::~Log() {
+	if (isOpen_)
+		logFile_.close();
+}

@@ -1,16 +1,16 @@
-#include <memory>
+#pragma once
+
 #include <fstream>
 #include <string>
 
-void startLog(const std::string& filepath);
-
-void log(Level s, const std::string& msg);
-
 class Log {
 public:
-    Log(const std::string& filepath);
-    void addLog(Level s, const std::string& msg);
+    Log(const std::string& filepath = "./BackendLogs/", const std::string& fileName = "BackendLogs.jog");
+    void addLog(const std::string& msg);
     ~Log();
 private:
-    std::ofstream m_logfile;
+    bool isOpen_;
+    std::string filepath_;
+    std::string fileName_;
+    std::ofstream logFile_;
 };

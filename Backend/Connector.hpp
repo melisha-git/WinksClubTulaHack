@@ -10,6 +10,7 @@
 #include "Users.hpp"
 #include "Events.hpp"
 #include "Tags.hpp"
+#include "Logs.hpp"
 
 class Connector : public std::enable_shared_from_this<Connector> {
 private:
@@ -20,6 +21,8 @@ private:
     boost::beast::http::response<boost::beast::http::dynamic_body> response_;
 
     boost::asio::steady_timer deadline_{socket_.get_executor(), std::chrono::seconds(60)};
+
+    Log logs_;
 public:
     Connector(boost::asio::ip::tcp::socket socket);
     ~Connector() = default;

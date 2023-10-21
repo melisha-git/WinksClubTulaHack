@@ -16,4 +16,6 @@ public:
 		const std::string& type, const std::string& image,
 		const std::string& beginTime, const std::string& endTime,
 		unsigned subscribers, unsigned maxSubscribers, std::vector<int> tags);
+	void updateEventSubscribers(unsigned subscribers, int id);
+	int getEventIDbyTime(const std::string &begin_time, const std::string& end_time);
 };
