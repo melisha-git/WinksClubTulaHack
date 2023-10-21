@@ -31,7 +31,7 @@ void Connector::parseRequest() {
     case boost::beast::http::verb::post:
         response_.result(boost::beast::http::status::ok);
         createPostResponse();
-
+        break;
     default:
         response_.result(boost::beast::http::status::bad_request);
         response_.set(boost::beast::http::field::content_type, "text/plain");
@@ -44,23 +44,30 @@ void Connector::parseRequest() {
 
 void Connector::createGetResponse() {
     boost::json::array obj;
-    obj.push_back(boost::json::string("Если Вы это читаете - Вы лучший!"));
+    obj.push_back(boost::json::string("if you are reading it - you are the best!"));
     if (request_.target() == "/api") {
         response_.set(boost::beast::http::field::content_type, "application/json");
         boost::beast::ostream(response_.body()) << obj;
     }
     else {
         response_.result(boost::beast::http::status::not_found);
-        response_.set(boost::beast::http::field::content_type, "text/plain");
-        boost::beast::ostream(response_.body()) << "File not found\r\n";
     }
 }
 
 void Connector::createPostResponse() {
     if (request_.target() == "/register") {
-        if (!request_.body().empty())
-            boost::json::value value = boost::json::parse(request_.body());
-        db_.insertQuery("INSERT INTO users(login, password, nickname) VALUES('+79143056314', 'Zxcity', 'valefimova8')");
+        boost::json::object value = boost::json::parse(request_.body()).as_object();
+        std::string login = value.at("login").as_string().c_str();
+        std::string password = value.at("password").as_string().c_str();
+        std::string inputCode = value.at("code").as_string().c_str();
+        auto code = db_.selectDml("SELECT code FROM codes WHERE nickname = '" + login + "'");
+        if (code.empty() || (code[0].as_object()["code"].as_string().c_str()) != inputCode) {
+            response_.result(boost::beast::http::status::bad_request);
+            return;
+        }
+        else {
+            db_.execDml("INSERT INTO users(login, password) VALUES('" + login + "', '" + password + "')");
+        }
     }
 }
 
