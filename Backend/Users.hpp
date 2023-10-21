@@ -18,5 +18,6 @@ public:
 	int getUserIDByLogin(const std::string& login);
 	std::string getUserLoginByID(int id);
 
-	void setNewEventFromUser(int eventID, const std::string& login);
+	bool setNewEventFromUser(int eventID, const std::string& login);
+	bool setNewEventFromUser(int eventID, int id);
 };

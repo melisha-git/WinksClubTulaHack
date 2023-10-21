@@ -169,8 +169,8 @@ void Connector::createPostResponse() {
             std::string image = value.at("image").as_string().c_str();
             std::string begin_time = value.at("begin_time").as_string().c_str();
             std::string end_time = value.at("end_time").as_string().c_str();
-            unsigned subscribers = value.at("subscribers").as_int64();
-            unsigned max_subscribers = value.at("max_subscribers").as_int64();
+            std::string subscribers = value.at("subscribers").as_string().c_str();
+            std::string max_subscribers = value.at("max_subscribers").as_string().c_str();
             auto tags = value.at("tags").as_array();
             std::vector<int> tagsVc;
             for (auto tag : tags) {
@@ -182,16 +182,28 @@ void Connector::createPostResponse() {
                 if (tagID != -1)
                     tagsVc.push_back(tagID);
             }
-            events_.addNewEvents(name, description, type, image, begin_time, end_time, subscribers, max_subscribers, tagsVc);
+            events_.addNewEvents(name, description, type, image, begin_time, end_time, stoi(subscribers), stoi(max_subscribers), tagsVc);
             int eventId = events_.getEventIDbyTime(begin_time, end_time);
-            events_.updateEventSubscribers(subscribers + 1, eventId);
-            users_.setNewEventFromUser(eventId, login);
+            if (users_.setNewEventFromUser(eventId, login))
+                events_.updateEventSubscribers(stoi(subscribers) + 1, eventId);
         }
         catch (std::exception ex) {
             std::string logMsg = ex.what();
             logMsg = "Error :" + logMsg;
             std::cout << logMsg << std::endl;
         }
+    }
+    else if (request_.target() == "/api/joinevent") {
+        boost::json::object value = boost::json::parse(request_.body()).as_object();
+        if (value.find("id") == value.end() || value.find("eventID") == value.end()) {
+            response_.result(boost::beast::http::status::bad_request);
+            return;
+        }
+        int eventID = value.at("eventID").as_int64();
+        int id = value.at("id").as_int64();
+        int sub = events_.getSubscribersByEventID(eventID);
+        if (users_.setNewEventFromUser(eventID, id))
+            events_.updateEventSubscribers(sub + 1, eventID);
     }
     else {
         response_.result(boost::beast::http::status::bad_request);

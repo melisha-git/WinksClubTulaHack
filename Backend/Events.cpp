@@ -56,3 +56,10 @@ boost::json::array Events::getAllEvents() {
 	return events;
 }
 
+int Events::getSubscribersByEventID(int id) {
+	auto subscribers = db_.selectDml("SELECT subscribers FROM events WHERE id = " + std::to_string(id));
+	if (subscribers.empty())
+		return -1;
+	return std::stoi(subscribers.at(0).as_object()["id"].as_string().c_str());
+}
+

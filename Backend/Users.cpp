@@ -57,8 +57,10 @@ std::string Users::getUserLoginByID(int id) {
     return users.at(0).as_object()["id"].as_string().c_str();
 }
 
-void Users::setNewEventFromUser(int eventID, const std::string& login) {
+bool Users::setNewEventFromUser(int eventID, const std::string& login) {
     auto userEvents = getEventsIDFromLogin(login);
+    if (std::find(userEvents.begin(), userEvents.end(), eventID) != userEvents.end())
+        return false;
     userEvents.push_back(eventID);
     std::string query = "UPDATE users SET events = '{";
     for (int i = 0; i < userEvents.size(); ++i) {
@@ -68,4 +70,21 @@ void Users::setNewEventFromUser(int eventID, const std::string& login) {
     }
     query += "}' WHERE login = " + login;
     db_.pqExecDml(query);
+    return true;
+}
+
+bool Users::setNewEventFromUser(int eventID, int id) {
+    auto userEvents = getEventsIDFromUserID(id);
+    if (std::find(userEvents.begin(), userEvents.end(), eventID) != userEvents.end())
+        return false;
+    userEvents.push_back(eventID);
+    std::string query = "UPDATE users SET events = '{";
+    for (int i = 0; i < userEvents.size(); ++i) {
+        query += std::to_string(userEvents[i]);
+        if (i + 1 < userEvents.size())
+            query += ", ";
+    }
+    query += "}' WHERE id = " + std::to_string(id);
+    db_.pqExecDml(query);
+    return true;
 }
