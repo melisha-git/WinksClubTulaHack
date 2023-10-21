@@ -1,6 +1,4 @@
 #include "Database.hpp"
-#include <stdexcept>
-#include <sstream>
 
 boost::json::array tokenize(std::string const& str, const char delim) {
 	std::stringstream ss(str);
@@ -38,6 +36,7 @@ void Database::init(const std::string& connectionString) {
 	if (connect_ != nullptr) {
 		PQfinish(connect_);
 	}
+	connectionString_ = connectionString;
 	connect_ = PQconnectdb(connectionString.c_str());
 	if (PQstatus(connect_) != CONNECTION_OK) {
 		throw std::logic_error("No connection to database with connectionString = " + connectionString);
@@ -49,6 +48,7 @@ void Database::execDml(const std::string& query) {
 }
 
 boost::json::array Database::selectDml(const std::string& query) {
+	init(connectionString_);
 	PQsendQuery(connect_, query.c_str());
 	auto queryResult = PQgetResult(connect_);
 	int turple = PQntuples(queryResult);
@@ -76,5 +76,10 @@ boost::json::array Database::selectDml(const std::string& query) {
 		}
 		selectResult.push_back(jsonObj);
 	}
+	PQclear(queryResult);
 	return selectResult;
+}
+
+std::string Database::getConnectionString() const {
+	return connectionString_;
 }

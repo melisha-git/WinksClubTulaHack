@@ -1,4 +1,7 @@
 #include "Connector.hpp"
+#include "Users.hpp"
+#include "Events.hpp"
+#include "Tags.hpp"
 
 Connector::Connector(boost::asio::ip::tcp::socket socket) 
     : socket_(std::move(socket)), db_("94.103.86.64", "5432", "postgres", "postgres", "1234") {
@@ -43,14 +46,40 @@ void Connector::parseRequest() {
 }
 
 void Connector::createGetResponse() {
-    boost::json::array obj;
-    obj.push_back(boost::json::string("if you are reading it - you are the best!"));
     if (request_.target() == "/api") {
         response_.set(boost::beast::http::field::content_type, "application/json");
-        boost::beast::ostream(response_.body()) << obj;
+    }
+    else if (request_.target() == "/api/events") {
+        try {
+            response_.set(boost::beast::http::field::content_type, "application/json");
+            boost::json::object value = boost::json::parse(request_.body()).as_object();
+            int userId = value["id"].as_int64();
+            Users users(db_.getConnectionString());
+            Events events(db_.getConnectionString());
+            Tags tags(db_.getConnectionString());
+            auto eventIds = users.getEventsIDFromUserID(userId);
+            for (auto eventId : eventIds) {
+                auto event = events.getEventFromID(eventId);
+                boost::json::object& jsonObject = event.as_object();
+                auto tagIDs = events.getTagsIDFromEventID(eventId);
+                boost::json::array newTags;
+                for (auto tagID : tagIDs) {
+                    auto tag = tags.getTagByID(tagID);
+                    newTags.push_back(tag);
+                }
+                jsonObject.erase("tags");
+                jsonObject["tags"] = newTags;
+                jsonObject["type"] = jsonObject["type"] == "t" ? "event" : "hobby";
+                boost::beast::ostream(response_.body()) << event;
+            }
+        }
+        catch (...) {}
     }
     else {
         response_.result(boost::beast::http::status::not_found);
+    }
+    if (response_.body().size() == 0) {
+        boost::beast::ostream(response_.body()) << boost::json::array();
     }
 }
 

@@ -135,7 +135,10 @@
   <ItemGroup>
     <ClCompile Include="Connector.cpp" />
     <ClCompile Include="Database.cpp" />
+    <ClCompile Include="Events.cpp" />
     <ClCompile Include="Server.cpp" />
+    <ClCompile Include="Tags.cpp" />
+    <ClCompile Include="Users.cpp" />
     <ClCompile Include="WinksClubTulaHack.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -144,7 +147,10 @@
   <ItemGroup>
     <ClInclude Include="Connector.hpp" />
     <ClInclude Include="Database.hpp" />
+    <ClInclude Include="Events.hpp" />
     <ClInclude Include="Server.hpp" />
+    <ClInclude Include="Tags.hpp" />
+    <ClInclude Include="Users.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
