@@ -5,6 +5,7 @@
 #include <boost/beast/version.hpp>
 #include <boost/asio.hpp>
 #include <boost/json.hpp>
+#include "Database.hpp"
 #include <iostream>
 
 class Connector : public std::enable_shared_from_this<Connector> {
@@ -24,8 +25,11 @@ private:
 
     void reading();
     void parseRequest();
-    void createResponse();
+    void createGetResponse();
+    void createPostResponse();
     void writeResponse();
 
     void checkDeadline();
+private:
+    Database db_;
 };

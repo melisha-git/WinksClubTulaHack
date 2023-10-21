@@ -1,6 +1,7 @@
 #include "Connector.hpp"
 
-Connector::Connector(boost::asio::ip::tcp::socket socket) : socket_(std::move(socket)) {
+Connector::Connector(boost::asio::ip::tcp::socket socket) 
+    : socket_(std::move(socket)), db_("94.103.86.64", "5432", "postgres", "postgres", "1234") {
 
 }
 
@@ -20,13 +21,16 @@ void Connector::reading()  {
 void Connector::parseRequest() {
     response_.version(request_.version());
     response_.keep_alive(false);
+    response_.set(boost::beast::http::field::server, "Winks Club");
 
     switch (request_.method()) {
     case boost::beast::http::verb::get:
         response_.result(boost::beast::http::status::ok);
-        response_.set(boost::beast::http::field::server, "Winks Club");
-        createResponse();
+        createGetResponse();
         break;
+    case boost::beast::http::verb::post:
+        response_.result(boost::beast::http::status::ok);
+        createPostResponse();
 
     default:
         response_.result(boost::beast::http::status::bad_request);
@@ -38,7 +42,7 @@ void Connector::parseRequest() {
     writeResponse();
 }
 
-void Connector::createResponse() {
+void Connector::createGetResponse() {
     boost::json::array obj;
     obj.push_back(boost::json::string("Если Вы это читаете - Вы лучший!"));
     if (request_.target() == "/api") {
@@ -49,6 +53,14 @@ void Connector::createResponse() {
         response_.result(boost::beast::http::status::not_found);
         response_.set(boost::beast::http::field::content_type, "text/plain");
         boost::beast::ostream(response_.body()) << "File not found\r\n";
+    }
+}
+
+void Connector::createPostResponse() {
+    if (request_.target() == "/register") {
+        if (!request_.body().empty())
+            boost::json::value value = boost::json::parse(request_.body());
+        db_.insertQuery("INSERT INTO users(login, password, nickname) VALUES('+79143056314', 'Zxcity', 'valefimova8')");
     }
 }
 
