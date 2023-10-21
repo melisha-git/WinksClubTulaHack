@@ -86,6 +86,11 @@ void Connector::createGetResponse() {
 void Connector::createPostResponse() {
     if (request_.target() == "/register") {
         boost::json::object value = boost::json::parse(request_.body()).as_object();
+        if (value.find("login") == value.end() || value.find("password") == value.end() || value.find("code") == value.end()) {
+            response_.result(boost::beast::http::status::bad_request);
+            return;
+        }
+
         std::string login = value.at("login").as_string().c_str();
         std::string password = value.at("password").as_string().c_str();
         std::string inputCode = value.at("code").as_string().c_str();
