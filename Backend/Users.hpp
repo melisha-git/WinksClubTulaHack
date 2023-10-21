@@ -12,4 +12,5 @@ public:
 	Users(const std::string &connectionString);
 	~Users() = default;
 	std::vector<int> getEventsIDFromUserID(int userID);
+	std::vector<int> getEventsIDFromLogin(const std::string &login);
 };

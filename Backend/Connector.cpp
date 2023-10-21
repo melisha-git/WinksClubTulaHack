@@ -53,11 +53,23 @@ void Connector::createGetResponse() {
         try {
             response_.set(boost::beast::http::field::content_type, "application/json");
             boost::json::object value = boost::json::parse(request_.body()).as_object();
-            int userId = value["id"].as_int64();
+            int userId = -1;
+            std::string login = "";
+            if (value.find("id") != value.end())
+                userId = value["id"].as_int64();
+            else if (value.find("login") != value.end())
+                login = value["login"].as_string().c_str();
+            if (userId == -1 && login == "") {
+                throw std::logic_error("Dont request id or login");
+            }
             Users users(db_.getConnectionString());
             Events events(db_.getConnectionString());
             Tags tags(db_.getConnectionString());
-            auto eventIds = users.getEventsIDFromUserID(userId);
+            std::vector<int> eventIds;
+            if (userId != -1)
+                eventIds = users.getEventsIDFromUserID(userId);
+            else
+                eventIds = users.getEventsIDFromLogin(login);
             for (auto eventId : eventIds) {
                 auto event = events.getEventFromID(eventId);
                 boost::json::object& jsonObject = event.as_object();
