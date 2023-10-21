@@ -21,6 +21,7 @@ public:
         const std::string& user, const std::string& password);
     void init(const std::string & connectionString);
     void execDml(const std::string& query);
+    void pqExecDml(const std::string& query);
     boost::json::array selectDml(const std::string& query);
     std::string getConnectionString() const;
 };

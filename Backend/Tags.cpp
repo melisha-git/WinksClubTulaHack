@@ -26,3 +26,8 @@ int Tags::getTagIDByLink(const std::string& link) {
 		return -1;
 	return std::stoi(tag.at(0).as_object()["id"].as_string().c_str());
 }
+
+boost::json::array Tags::getAllTags() {
+	auto tag = db_.selectDml("SELECT * from tags");
+	return tag;
+}

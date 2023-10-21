@@ -18,4 +18,5 @@ public:
 		unsigned subscribers, unsigned maxSubscribers, std::vector<int> tags);
 	void updateEventSubscribers(unsigned subscribers, int id);
 	int getEventIDbyTime(const std::string &begin_time, const std::string& end_time);
+	boost::json::array getAllEvents();
 };

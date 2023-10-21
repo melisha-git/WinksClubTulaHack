@@ -28,10 +28,12 @@ void Connector::parseRequest() {
     switch (request_.method()) {
     case boost::beast::http::verb::get:
         response_.result(boost::beast::http::status::ok);
+        response_.set(boost::beast::http::field::content_type, "application/json");
         createGetResponse();
         break;
     case boost::beast::http::verb::post:
         response_.result(boost::beast::http::status::ok);
+        response_.set(boost::beast::http::field::content_type, "application/json");
         createPostResponse();
         break;
     default:
@@ -45,12 +47,8 @@ void Connector::parseRequest() {
 }
 
 void Connector::createGetResponse() {
-    if (request_.target() == "/api") {
-        response_.set(boost::beast::http::field::content_type, "application/json");
-    }
-    else if (request_.target() == "/api/events") {
+    if (request_.target() == "/api/events") {
         try {
-            response_.set(boost::beast::http::field::content_type, "application/json");
             boost::json::object value = boost::json::parse(request_.body()).as_object();
             int userId = -1;
             std::string login = "";
@@ -83,6 +81,14 @@ void Connector::createGetResponse() {
         }
         catch (...) {}
     }
+    else if (request_.target() == "/alltags") {
+        auto tags = tags_.getAllTags();
+        boost::beast::ostream(response_.body()) << tags;
+    }
+    else if (request_.target() == "/allevents") {
+        auto events = events_.getAllEvents();
+        boost::beast::ostream(response_.body()) << events;
+    }
     else {
         response_.result(boost::beast::http::status::bad_request);
     }
@@ -109,9 +115,13 @@ void Connector::createPostResponse() {
             return;
         }
         else {
+            if (users_.getUserIDByLogin(login) != -1) {
+                response_.result(boost::beast::http::status::bad_request);
+                return;
+            }
             users_.addNewUser(login, password);
             auto userID = users_.getUserIDByCreds(login, password);
-            if (userID == boost::json::value())
+            if (userID == -1)
                 response_.result(boost::beast::http::status::bad_request);
             else
                 boost::beast::ostream(response_.body()) << userID;
@@ -126,14 +136,17 @@ void Connector::createPostResponse() {
         std::string login = value.at("login").as_string().c_str();
         std::string password = value.at("password").as_string().c_str();
         auto userID = users_.getUserIDByCreds(login, password);
-        if (userID == boost::json::value())
+        if (userID == -1)
             response_.result(boost::beast::http::status::bad_request);
-        else
-            boost::beast::ostream(response_.body()) << userID;
+        else {
+            boost::json::object resultObject;
+            resultObject["id"] = userID;
+            boost::beast::ostream(response_.body()) << resultObject;
+        }
     }
     else if (request_.target() == "/api/newevent") {
         boost::json::object value = boost::json::parse(request_.body()).as_object();
-        if (value.find("login") == value.end() || value.find("name") == value.end() ||
+        if ((value.find("login") == value.end() && value.find("id") == value.end()) || value.find("name") == value.end() ||
             value.find("description") == value.end() || value.find("type") == value.end() || 
             value.find("image") == value.end() || value.find("begin_time") == value.end() || 
             value.find("end_time") == value.end() || value.find("subscribers") == value.end() ||
@@ -142,7 +155,14 @@ void Connector::createPostResponse() {
             return;
         }
         try {
-            std::string login = value.at("login").as_string().c_str();
+            int id = -1;
+            std::string login = "";
+            if (value.find("login") != value.end())
+                login = value.at("login").as_string().c_str();
+            else {
+                id = value.at("id").as_int64();
+                login = users_.getUserLoginByID(id);
+            }
             std::string name = value.at("name").as_string().c_str();
             std::string description = value.at("description").as_string().c_str();
             std::string type = value.at("type").as_string().c_str();
@@ -162,8 +182,10 @@ void Connector::createPostResponse() {
                 if (tagID != -1)
                     tagsVc.push_back(tagID);
             }
-            events_.addNewEvents(name, description, type, image, begin_time, end_time, subscribers == 0 ? 1 : subscribers, max_subscribers, tagsVc);
+            events_.addNewEvents(name, description, type, image, begin_time, end_time, subscribers, max_subscribers, tagsVc);
             int eventId = events_.getEventIDbyTime(begin_time, end_time);
+            events_.updateEventSubscribers(subscribers + 1, eventId);
+            users_.setNewEventFromUser(eventId, login);
         }
         catch (std::exception ex) {
             std::string logMsg = ex.what();

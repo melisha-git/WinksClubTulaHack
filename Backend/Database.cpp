@@ -45,7 +45,13 @@ void Database::init(const std::string& connectionString) {
 }
 
 void Database::execDml(const std::string& query) {
+	init(connectionString_);
 	PQsendQuery(connect_, query.c_str());
+}
+
+void Database::pqExecDml(const std::string& query) {
+	init(connectionString_);
+	PQexec(connect_, query.c_str());
 }
 
 boost::json::array Database::selectDml(const std::string& query) {

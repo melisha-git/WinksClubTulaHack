@@ -36,10 +36,36 @@ void Users::addNewUser(const std::string& login, const std::string& password) {
     db_.execDml("INSERT INTO users(login, password) VALUES('" + login + "', '" + password + "')");
 }
 
-boost::json::value Users::getUserIDByCreds(const std::string& login, const std::string& password) {
+int Users::getUserIDByCreds(const std::string& login, const std::string& password) {
     auto users = db_.selectDml("SELECT id FROM users WHERE login = '" + login + "' AND password = '" + password + "'");
-    boost::json::value value;
     if (users.empty())
-        return value;
-    return users.at(0);
+        return -1;
+    return std::stoi(users.at(0).as_object()["id"].as_string().c_str());
+}
+
+int Users::getUserIDByLogin(const std::string& login) {
+    auto users = db_.selectDml("SELECT id FROM users WHERE login = '" + login + "'");
+    if (users.empty())
+        return -1;
+    return std::stoi(users.at(0).as_object()["id"].as_string().c_str());
+}
+
+std::string Users::getUserLoginByID(int id) {
+    auto users = db_.selectDml("SELECT login FROM users WHERE id = " + id);
+    if (users.empty())
+        return "";
+    return users.at(0).as_object()["id"].as_string().c_str();
+}
+
+void Users::setNewEventFromUser(int eventID, const std::string& login) {
+    auto userEvents = getEventsIDFromLogin(login);
+    userEvents.push_back(eventID);
+    std::string query = "UPDATE users SET events = '{";
+    for (int i = 0; i < userEvents.size(); ++i) {
+        query += std::to_string(userEvents[i]);
+        if (i + 1 < userEvents.size())
+            query += ", ";
+    }
+    query += "}' WHERE login = " + login;
+    db_.pqExecDml(query);
 }

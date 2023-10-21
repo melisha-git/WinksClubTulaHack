@@ -41,7 +41,7 @@ void Events::addNewEvents(const std::string& name, const std::string &descriptio
 
 void Events::updateEventSubscribers(unsigned subscribers, int id) {
 	std::string query = "UPDATE events SET subscribers = " + std::to_string(subscribers) + " WHERE id = " + std::to_string(id);
-	db_.execDml(query);
+	db_.pqExecDml(query);
 }
 
 int Events::getEventIDbyTime(const std::string& begin_time, const std::string& end_time) {
@@ -49,5 +49,10 @@ int Events::getEventIDbyTime(const std::string& begin_time, const std::string& e
 	if (event.empty())
 		return -1;
 	return std::stoi(event.at(0).as_object()["id"].as_string().c_str());
+}
+
+boost::json::array Events::getAllEvents() {
+	auto events = db_.selectDml("SELECT * FROM events");
+	return events;
 }
 
