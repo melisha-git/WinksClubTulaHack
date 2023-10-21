@@ -1,6 +1,4 @@
 #include "Database.hpp"
-#include <stdexcept>
-#include <sstream>
 
 boost::json::array tokenize(std::string const& str, const char delim) {
 	std::stringstream ss(str);
@@ -19,7 +17,7 @@ Database::Database(const std::string& hostname, const std::string& port, const s
 	init(hostname, port, database, user, password);
 }
 
-Database::Database(const std::string& connectionString) {
+Database::Database(std::string connectionString) {
 	init(connectionString);
 }
 
@@ -35,9 +33,11 @@ void Database::init(const std::string& hostname, const std::string& port, const 
 }
 
 void Database::init(const std::string& connectionString) {
-	if (connect_ != nullptr) {
+	
+	if (connectionString_ != "") {
 		PQfinish(connect_);
 	}
+	connectionString_ = connectionString;
 	connect_ = PQconnectdb(connectionString.c_str());
 	if (PQstatus(connect_) != CONNECTION_OK) {
 		throw std::logic_error("No connection to database with connectionString = " + connectionString);
@@ -49,6 +49,7 @@ void Database::execDml(const std::string& query) {
 }
 
 boost::json::array Database::selectDml(const std::string& query) {
+	init(connectionString_);
 	PQsendQuery(connect_, query.c_str());
 	auto queryResult = PQgetResult(connect_);
 	int turple = PQntuples(queryResult);
@@ -76,5 +77,10 @@ boost::json::array Database::selectDml(const std::string& query) {
 		}
 		selectResult.push_back(jsonObj);
 	}
+	PQclear(queryResult);
 	return selectResult;
+}
+
+std::string Database::getConnectionString() const {
+	return connectionString_;
 }
