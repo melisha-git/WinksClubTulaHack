@@ -52,3 +52,9 @@ void ML::updateLastClick(int userID, std::vector<int> lastClicks) {
 	query += "}' WHERE user_id = " + std::to_string(userID);
 	db_.pqExecDml(query);
 }
+
+boost::json::array ML::getNextRecomended(int userID) {
+	auto nextTags = db_.selectDml("SELECT next_tags from output_ml WHERE user_id = " + std::to_string(userID));
+	return nextTags.at(0).as_object()["next_tags"].as_array();
+}
+

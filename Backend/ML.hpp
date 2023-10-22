@@ -17,4 +17,6 @@ public:
 	void addUserTagID(int userID, int tagID);
 	void createLastClick(int userID, std::vector<int> lastClicks);
 	void updateLastClick(int userID, std::vector<int> lastClicks);
+
+	boost::json::array getNextRecomended(int userID);
 };

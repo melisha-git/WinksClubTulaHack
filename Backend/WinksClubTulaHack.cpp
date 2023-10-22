@@ -2,6 +2,6 @@
 
 int main() {
 	std::setlocale(LC_ALL, "Russia");
-	Server s("127.0.0.1", 8080);
+	Server s("94.103.86.64", 8080);
 	s.start();
 }

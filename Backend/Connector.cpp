@@ -47,7 +47,7 @@ void Connector::parseRequest() {
 }
 
 void Connector::createGetResponse() {
-    if (request_.target() == "/api/events" || request_.target().find('?') != std::string::npos) {
+    if (request_.target() == "/api/events" || (request_.target().find("/api/events") != std::string::npos && request_.target().find('?') != std::string::npos)) {
         try {
             int userId = -1;
             int eventID = -1;
@@ -127,11 +127,28 @@ void Connector::createGetResponse() {
         boost::beast::ostream(response_.body()) << resultEvents;
     }
     else if (request_.target().find("chat/") != std::string::npos) {
-        std::string numberString = request_.target();
-        numberString = numberString.substr(numberString.find("chat/") + 5);
-        int eventID = std::stoi(numberString);
-        auto messages = events_.getChat(eventID);
-        boost::beast::ostream(response_.body()) << messages;
+        try {
+            std::string numberString = request_.target();
+            numberString = numberString.substr(numberString.find("chat/") + 5);
+            int eventID = std::stoi(numberString);
+            auto messages = events_.getChat(eventID);
+            boost::beast::ostream(response_.body()) << messages;
+        }
+        catch (std::exception ex) {
+            boost::beast::ostream(response_.body()) << ex.what();
+        }
+    }
+    else if (request_.target() == "/api/recomendation" || ((request_.target().find("/api/recomendation") != std::string::npos && request_.target().find('?') != std::string::npos))) {
+        int userId = -1;
+        if (request_.target().find('?') != std::string::npos) {
+            std::string query = request_.target();
+            query = query.substr(query.find('=') + 1);
+            userId = std::stoi(query);
+        }
+        boost::json::array mlRecomend;
+        if (userId != -1)
+            mlRecomend = ml_.getNextRecomended(userId);
+        boost::beast::ostream(response_.body()) << mlRecomend;
     }
     else {
         response_.result(boost::beast::http::status::bad_request);
@@ -275,6 +292,7 @@ void Connector::createPostResponse() {
         int userID = value.at("userID").as_int64();
         std::string message = value.at("message").as_string().c_str();
         events_.sendMessage(userID, eventID, message);
+        boost::beast::ostream(response_.body()) << message;
     }
     else {
         response_.result(boost::beast::http::status::bad_request);
