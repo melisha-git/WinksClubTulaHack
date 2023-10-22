@@ -21,4 +21,5 @@ public:
 	boost::json::array getAllEvents();
 	int getSubscribersByEventID(int id);
 	void sendMessage(int userID, int eventID, const std::string& message);
+	boost::json::array getChat(int eventID);
 };

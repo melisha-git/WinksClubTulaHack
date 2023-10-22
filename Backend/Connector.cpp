@@ -126,6 +126,13 @@ void Connector::createGetResponse() {
         }
         boost::beast::ostream(response_.body()) << resultEvents;
     }
+    else if (request_.target().find("chat/") != std::string::npos) {
+        std::string numberString = request_.target();
+        numberString = numberString.substr(numberString.find("chat/") + 5);
+        int eventID = std::stoi(numberString);
+        auto messages = events_.getChat(eventID);
+        boost::beast::ostream(response_.body()) << messages;
+    }
     else {
         response_.result(boost::beast::http::status::bad_request);
     }

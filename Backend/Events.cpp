@@ -65,5 +65,10 @@ int Events::getSubscribersByEventID(int id) {
 
 void Events::sendMessage(int userID, int eventID, const std::string& message) {
 	std::string query = "INSERT INTO chats(event_id, user_id, message) values(" + std::to_string(eventID) + ", " + std::to_string(userID) + ", '" + message + "')";
+	db_.execDml(query);
 }
 
+boost::json::array Events::getChat(int eventID) {
+	auto messages = db_.selectDml("SELECT * from chats WHERE event_id = " + std::to_string(eventID));
+	return messages;
+}
