@@ -139,16 +139,19 @@ void Connector::createGetResponse() {
         }
     }
     else if (request_.target() == "/api/recomendation" || ((request_.target().find("/api/recomendation") != std::string::npos && request_.target().find('?') != std::string::npos))) {
-        int userId = -1;
-        if (request_.target().find('?') != std::string::npos) {
-            std::string query = request_.target();
-            query = query.substr(query.find('=') + 1);
-            userId = std::stoi(query);
+        try {
+            int userId = -1;
+            if (request_.target().find('?') != std::string::npos) {
+                std::string query = request_.target();
+                query = query.substr(query.find('=') + 1);
+                userId = std::stoi(query);
+            }
+            boost::json::array mlRecomend;
+            if (userId != -1)
+                mlRecomend = ml_.getNextRecomended(userId);
+            boost::beast::ostream(response_.body()) << mlRecomend;
         }
-        boost::json::array mlRecomend;
-        if (userId != -1)
-            mlRecomend = ml_.getNextRecomended(userId);
-        boost::beast::ostream(response_.body()) << mlRecomend;
+        catch (...) {}
     }
     else {
         response_.result(boost::beast::http::status::bad_request);
