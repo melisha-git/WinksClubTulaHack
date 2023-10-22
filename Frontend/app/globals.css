@@ -7,3 +7,19 @@ body{
     letter-spacing: -0.025em;
     background-color: #F5F5F5;
 }
+
+/* Скрываем scrollbar */
+.no-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scroll {
+    -ms-overflow-style: none;
+    /* IE и Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.height-chat{
+    height: calc(100vh-100px);
+}

@@ -1,20 +1,17 @@
 "use client";
-import { createContext, useState } from "react";
-import ChatList from "@/components/chatList/chatList";
-import Header from "@/components/header";
-
-export const ThemeContext = createContext(null);
+import ChatListFavorite from "@/components/mainPage/chatList/chatListFavorite";
+import ChatListRecondation from "@/components/mainPage/chatList/chatListRecondation";
+import Header from "@/components/mainPage/header";
+import AddBtnUI from "@/ui/button/addButton";
 
 export default function Home() {
-  const [section, setSection] = useState("event");
   return (
     <>
       <div className="">
-        <ThemeContext.Provider value={[section, setSection]}>
-          <Header />
-          <ChatList nameList={"Мои мероприятия"} />
-          <ChatList nameList={"Рекомендации"} />
-        </ThemeContext.Provider>
+        <Header />
+        <ChatListFavorite />
+        <ChatListRecondation />
+        <AddBtnUI />
       </div>
     </>
   );
