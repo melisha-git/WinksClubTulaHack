@@ -20,4 +20,5 @@ public:
 	int getEventIDbyTime(const std::string &begin_time, const std::string& end_time);
 	boost::json::array getAllEvents();
 	int getSubscribersByEventID(int id);
+	void sendMessage(int userID, int eventID, const std::string& message);
 };

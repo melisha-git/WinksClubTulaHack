@@ -63,3 +63,7 @@ int Events::getSubscribersByEventID(int id) {
 	return std::stoi(subscribers.at(0).as_object()["id"].as_string().c_str());
 }
 
+void Events::sendMessage(int userID, int eventID, const std::string& message) {
+	std::string query = "INSERT INTO chats(event_id, user_id, message) values(" + std::to_string(eventID) + ", " + std::to_string(userID) + ", '" + message + "')";
+}
+

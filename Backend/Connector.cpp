@@ -50,13 +50,38 @@ void Connector::createGetResponse() {
     if (request_.target() == "/api/events" || request_.target().find('?') != std::string::npos) {
         try {
             int userId = -1;
+            int eventID = -1;
             std::string login = "";
+            bool isChatId = false;
             if (request_.target().find('?') != std::string::npos) {
                 std::string query = request_.target();
-                query = query.substr(query.find('?id=') + 1);
-                userId = std::stoi(query);
+                if (request_.target().find("id") != std::string::npos) {
+                    query = query.substr(query.find('=') + 1);
+                    userId = std::stoi(query);
+                }
+                else if (request_.target().find("eventID") != std::string::npos) {
+                    query = query.substr(query.find('=') + 1);
+                    eventID = stoi(query);
+                }
             }
             std::vector<int> eventIds;
+            boost::json::array resultEvents;
+            if (eventID != -1) {
+                auto result = events_.getEventFromID(eventID);
+                boost::json::object& jsonObject = result.as_object();
+                auto tagIDs = events_.getTagsIDFromEventID(eventID);
+                boost::json::array newTags;
+                for (auto tagID : tagIDs) {
+                    auto tag = tags_.getTagByID(tagID);
+                    newTags.push_back(tag);
+                }
+                jsonObject.erase("tags");
+                jsonObject["tags"] = newTags;
+                jsonObject["type"] = jsonObject["type"] == "t" ? "event" : "hobby";
+                resultEvents.push_back(result);
+                boost::beast::ostream(response_.body()) << resultEvents;
+                return;
+            }
             if (userId != -1)
                 eventIds = users_.getEventsIDFromUserID(userId);
             else
@@ -73,8 +98,9 @@ void Connector::createGetResponse() {
                 jsonObject.erase("tags");
                 jsonObject["tags"] = newTags;
                 jsonObject["type"] = jsonObject["type"] == "t" ? "event" : "hobby";
-                boost::beast::ostream(response_.body()) << event;
+                resultEvents.push_back(event);
             }
+            boost::beast::ostream(response_.body()) << resultEvents;
         }
         catch (...) {}
     }
@@ -83,8 +109,22 @@ void Connector::createGetResponse() {
         boost::beast::ostream(response_.body()) << tags;
     }
     else if (request_.target() == "/allevents") {
+        boost::json::array resultEvents;
         auto events = events_.getAllEvents();
-        boost::beast::ostream(response_.body()) << events;
+        for (auto &event : events) {
+            boost::json::object& jsonObject = event.as_object();
+            auto tagIDs = events_.getTagsIDFromEventID(std::stoi(jsonObject["id"].as_string().c_str()));
+            boost::json::array newTags;
+            for (auto tagID : tagIDs) {
+                auto tag = tags_.getTagByID(tagID);
+                newTags.push_back(tag);
+            }
+            jsonObject.erase("tags");
+            jsonObject["tags"] = newTags;
+            jsonObject["type"] = jsonObject["type"] == "t" ? "event" : "hobby";
+            resultEvents.push_back(event);
+        }
+        boost::beast::ostream(response_.body()) << resultEvents;
     }
     else {
         response_.result(boost::beast::http::status::bad_request);
@@ -190,7 +230,7 @@ void Connector::createPostResponse() {
                 events_.updateEventSubscribers(subscribers + 1, eventId);
             boost::json::object resObj;
             resObj["eventID"] = eventId;
-            //ml_.addUserTagIDs(id, tagsVc);
+            ml_.addUserTagIDs(id, tagsVc);
             boost::beast::ostream(response_.body()) << resObj;
         }
         catch (std::exception ex) {
@@ -210,6 +250,24 @@ void Connector::createPostResponse() {
         int sub = events_.getSubscribersByEventID(eventID);
         if (users_.setNewEventFromUser(eventID, id))
             events_.updateEventSubscribers(sub + 1, eventID);
+        auto tags = events_.getTagsIDFromEventID(eventID);
+        ml_.addUserTagIDs(id, tags);
+        boost::json::object resultObject;
+        resultObject["id"] = id;
+        resultObject["eventID"] = eventID;
+        boost::beast::ostream(response_.body()) << resultObject;
+    }
+    else if (request_.target() == "/api/sendmessage") {
+        boost::json::object value = boost::json::parse(request_.body()).as_object();
+        if (value.find("eventID") == value.end() || value.find("userID") == value.end() 
+            || value.find("message") == value.end()) {
+            response_.result(boost::beast::http::status::bad_request);
+            return;
+        }
+        int eventID = value.at("eventID").as_int64();
+        int userID = value.at("userID").as_int64();
+        std::string message = value.at("message").as_string().c_str();
+        events_.sendMessage(userID, eventID, message);
     }
     else {
         response_.result(boost::beast::http::status::bad_request);

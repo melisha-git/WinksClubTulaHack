@@ -3,31 +3,51 @@
 ML::ML(const std::string& connectionString) 
 	: db_(connectionString), inputTable_("input_ml"), outputTable_("output_ml") {}
 
-boost::json::array ML::getTagsFromUserID(int userID) {
-	auto inputs = db_.selectDml("SELECT last_clicks from " + inputTable_ + " WHERE user_id = " + std::to_string(userID));
-	return inputs.at(0).as_object()["last_clicks"].as_array();
+std::vector<int> ML::getTagsFromUserID(int userID) {
+	auto selectResult = db_.selectDml("SELECT last_clicks from input_ml where user_id = " + std::to_string(userID));
+	if (selectResult.empty()) {
+		return {};
+	}
+	std::vector<int> result;
+	auto last_clicks = selectResult.begin()->as_object()["last_clicks"].as_array();
+	for (auto clicks : last_clicks) {
+		std::string sClick = clicks.as_string().c_str();
+		result.push_back(std::stoi(sClick));
+	}
+	return result;
 }
 
 void ML::addUserTagIDs(int userID, const std::vector<int>& tagIDs) {
+	auto inputs = getTagsFromUserID(userID);
+	bool isNew_ = inputs.empty();
 	for (auto id : tagIDs) {
-		addUserTagID(userID, id);
+		inputs.push_back(id);
 	}
+	if (isNew_)
+		return createLastClick(userID, inputs);
+	return updateLastClick(userID, inputs);
 }
 
 void ML::addUserTagID(int userID, int tagID) {
 	auto inputs = getTagsFromUserID(userID);
-	boost::json::value v(tagID);
-	inputs.push_back(v);
+	bool isNew_ = inputs.empty();
+	inputs.push_back(tagID);
+	if (isNew_)
+		return createLastClick(userID, inputs);
 	return updateLastClick(userID, inputs);
 }
 
-void ML::updateLastClick(int userID, boost::json::array lastClicks) {
+void ML::createLastClick(int userID, std::vector<int> lastClicks) {
+	std::string query = "INSERT INTO input_ml(user_id, last_clicks) values(" + std::to_string(userID) + ", '{" + std::to_string(lastClicks[0]) + "}')";
+	db_.execDml(query);
+}
+
+void ML::updateLastClick(int userID, std::vector<int> lastClicks) {
 	std::string query = "UPDATE " + inputTable_ + " SET last_clicks = '{";
-	for (auto valID : lastClicks) {
-		int id = valID.as_int64();
-		if (valID != *(lastClicks.begin()))
+	for (int i = 0; i < lastClicks.size(); ++i) {
+		query += std::to_string(lastClicks[i]);
+		if (i + 1 < lastClicks.size())
 			query += ", ";
-		query += std::to_string(id);
 	}
 	query += "}' WHERE user_id = " + std::to_string(userID);
 	db_.pqExecDml(query);

@@ -12,8 +12,9 @@ private:
 public:
 	ML(const std::string& connectionString);
 
-	boost::json::array getTagsFromUserID(int userID);
+	std::vector<int> getTagsFromUserID(int userID);
 	void addUserTagIDs(int userID, const std::vector<int> &tagIDs);
 	void addUserTagID(int userID, int tagID);
-	void updateLastClick(int userID, boost::json::array lastClicks);
+	void createLastClick(int userID, std::vector<int> lastClicks);
+	void updateLastClick(int userID, std::vector<int> lastClicks);
 };
