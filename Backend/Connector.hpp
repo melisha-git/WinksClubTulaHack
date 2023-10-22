@@ -37,6 +37,8 @@ private:
     void createPostResponse();
     void writeResponse();
 
+    boost::json::object joinEvent(int eventID, int id);
+
     void checkDeadline();
 private:
     Database db_;

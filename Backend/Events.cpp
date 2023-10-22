@@ -60,7 +60,7 @@ int Events::getSubscribersByEventID(int id) {
 	auto subscribers = db_.selectDml("SELECT subscribers FROM events WHERE id = " + std::to_string(id));
 	if (subscribers.empty())
 		return -1;
-	return std::stoi(subscribers.at(0).as_object()["id"].as_string().c_str());
+	return std::stoi(subscribers.at(0).as_object()["subscribers"].as_string().c_str());
 }
 
 void Events::sendMessage(int userID, int eventID, const std::string& message) {
@@ -69,6 +69,6 @@ void Events::sendMessage(int userID, int eventID, const std::string& message) {
 }
 
 boost::json::array Events::getChat(int eventID) {
-	auto messages = db_.selectDml("SELECT * from chats WHERE event_id = " + std::to_string(eventID));
+	auto messages = db_.selectDml("select event_id, user_id, message, (select login from users where id = user_id) from chats where event_id = " + std::to_string(eventID));
 	return messages;
 }

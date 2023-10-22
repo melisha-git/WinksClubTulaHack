@@ -71,7 +71,10 @@ boost::json::array Database::selectDml(const std::string& query) {
 			case 600:
 			case 1015: {
 				std::string str = PQgetvalue(queryResult, i, j);
-				boost::json::array elem = tokenize(str.substr(1, str.size() - 2), ',');
+				boost::json::array elem;
+				if (str.size() != 0) {
+					elem = tokenize(str.substr(1, str.size() - 2), ',');
+				}
 				jsonObj[name] = elem;
 				break;
 			}
