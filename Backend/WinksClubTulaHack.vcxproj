@@ -137,6 +137,7 @@
     <ClCompile Include="Database.cpp" />
     <ClCompile Include="Events.cpp" />
     <ClCompile Include="Logs.cpp" />
+    <ClCompile Include="ML.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Tags.cpp" />
     <ClCompile Include="Users.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="Database.hpp" />
     <ClInclude Include="Events.hpp" />
     <ClInclude Include="Logs.hpp" />
+    <ClInclude Include="ML.hpp" />
     <ClInclude Include="Server.hpp" />
     <ClInclude Include="Tags.hpp" />
     <ClInclude Include="Users.hpp" />

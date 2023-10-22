@@ -19,7 +19,7 @@ std::vector<int> Users::getEventsIDFromUserID(int userID) {
 }
 
 std::vector<int> Users::getEventsIDFromLogin(const std::string& login) {
-    auto selectResult = db_.selectDml("SELECT events from users where login = " + login);
+    auto selectResult = db_.selectDml("SELECT events from users where login = '" + login + "'");
     if (selectResult.empty()) {
         return {};
     }
@@ -51,10 +51,10 @@ int Users::getUserIDByLogin(const std::string& login) {
 }
 
 std::string Users::getUserLoginByID(int id) {
-    auto users = db_.selectDml("SELECT login FROM users WHERE id = " + id);
+    auto users = db_.selectDml("SELECT login FROM users WHERE id = " + std::to_string(id));
     if (users.empty())
         return "";
-    return users.at(0).as_object()["id"].as_string().c_str();
+    return users.at(0).as_object()["login"].as_string().c_str();
 }
 
 bool Users::setNewEventFromUser(int eventID, const std::string& login) {
@@ -68,7 +68,7 @@ bool Users::setNewEventFromUser(int eventID, const std::string& login) {
         if (i + 1 < userEvents.size())
             query += ", ";
     }
-    query += "}' WHERE login = " + login;
+    query += "}' WHERE login = '" + login + "'";
     db_.pqExecDml(query);
     return true;
 }

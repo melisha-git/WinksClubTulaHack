@@ -3,7 +3,7 @@
 
 Connector::Connector(boost::asio::ip::tcp::socket socket) 
     : socket_(std::move(socket)), db_("94.103.86.64", "5432", "postgres", "postgres", "1234"),
-        users_(db_.getConnectionString()), events_(db_.getConnectionString()), tags_(db_.getConnectionString()) {
+        users_(db_.getConnectionString()), events_(db_.getConnectionString()), tags_(db_.getConnectionString()), ml_(db_.getConnectionString()) {
 
 }
 
@@ -47,17 +47,14 @@ void Connector::parseRequest() {
 }
 
 void Connector::createGetResponse() {
-    if (request_.target() == "/api/events") {
+    if (request_.target() == "/api/events" || request_.target().find('?') != std::string::npos) {
         try {
-            boost::json::object value = boost::json::parse(request_.body()).as_object();
             int userId = -1;
             std::string login = "";
-            if (value.find("id") != value.end())
-                userId = value["id"].as_int64();
-            else if (value.find("login") != value.end())
-                login = value["login"].as_string().c_str();
-            if (userId == -1 && login == "") {
-                throw std::logic_error("Dont request id or login");
+            if (request_.target().find('?') != std::string::npos) {
+                std::string query = request_.target();
+                query = query.substr(query.find('?id=') + 1);
+                userId = std::stoi(query);
             }
             std::vector<int> eventIds;
             if (userId != -1)
@@ -123,8 +120,11 @@ void Connector::createPostResponse() {
             auto userID = users_.getUserIDByCreds(login, password);
             if (userID == -1)
                 response_.result(boost::beast::http::status::bad_request);
-            else
-                boost::beast::ostream(response_.body()) << userID;
+            else {
+                boost::json::object resultObject;
+                resultObject["id"] = userID;
+                boost::beast::ostream(response_.body()) << resultObject;
+            }
         }
     }
     else if (request_.target() == "/login") {
@@ -157,8 +157,10 @@ void Connector::createPostResponse() {
         try {
             int id = -1;
             std::string login = "";
-            if (value.find("login") != value.end())
+            if (value.find("login") != value.end()) {
                 login = value.at("login").as_string().c_str();
+                id = users_.getUserIDByLogin(login);
+            }
             else {
                 id = value.at("id").as_int64();
                 login = users_.getUserLoginByID(id);
@@ -169,8 +171,8 @@ void Connector::createPostResponse() {
             std::string image = value.at("image").as_string().c_str();
             std::string begin_time = value.at("begin_time").as_string().c_str();
             std::string end_time = value.at("end_time").as_string().c_str();
-            std::string subscribers = value.at("subscribers").as_string().c_str();
-            std::string max_subscribers = value.at("max_subscribers").as_string().c_str();
+            unsigned subscribers = value.at("subscribers").as_int64();
+            unsigned max_subscribers = value.at("max_subscribers").as_int64();
             auto tags = value.at("tags").as_array();
             std::vector<int> tagsVc;
             for (auto tag : tags) {
@@ -182,10 +184,14 @@ void Connector::createPostResponse() {
                 if (tagID != -1)
                     tagsVc.push_back(tagID);
             }
-            events_.addNewEvents(name, description, type, image, begin_time, end_time, stoi(subscribers), stoi(max_subscribers), tagsVc);
+            events_.addNewEvents(name, description, type, image, begin_time, end_time, subscribers, max_subscribers, tagsVc);
             int eventId = events_.getEventIDbyTime(begin_time, end_time);
             if (users_.setNewEventFromUser(eventId, login))
-                events_.updateEventSubscribers(stoi(subscribers) + 1, eventId);
+                events_.updateEventSubscribers(subscribers + 1, eventId);
+            boost::json::object resObj;
+            resObj["eventID"] = eventId;
+            //ml_.addUserTagIDs(id, tagsVc);
+            boost::beast::ostream(response_.body()) << resObj;
         }
         catch (std::exception ex) {
             std::string logMsg = ex.what();

@@ -11,6 +11,7 @@
 #include "Events.hpp"
 #include "Tags.hpp"
 #include "Logs.hpp"
+#include "ML.hpp"
 
 class Connector : public std::enable_shared_from_this<Connector> {
 private:
@@ -42,4 +43,5 @@ private:
     Users users_;
     Events events_;
     Tags tags_;
+    ML ml_;
 };
